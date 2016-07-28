@@ -103,8 +103,9 @@
 # Define any package specific operations that shall be performed when
 # the package is removed.
 ######################################################################
-#PKG_PRE_REMOVE="{
-#}"
+PKG_PRE_REMOVE="{
+    $CMD_RM -rf ${SYS_QPKG_DIR}/distribution
+}"
 #
 #PKG_MAIN_REMOVE="{
 #}"
@@ -136,5 +137,42 @@
 #pkg_install(){
 #}
 #
-#pkg_post_install(){
-#}
+pkg_post_install(){
+    $CMD_MKDIR ${SYS_QPKG_DIR}/distribution
+    extract_data openhab-online-2.0.0.b3.tar.gz ${SYS_QPKG_DIR}/distribution
+
+    # Closed share path
+    get_share_path "openHAB2" OPENHAB2_SHARE_PATH
+
+    # Public share path
+    OPENHAB2_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB2
+
+    if [ -d ${OPENHAB2_SHARE_PATH} ]; then
+        # Move conf if needed and symlink it
+        if [ ! -d ${OPENHAB2_SHARE_PATH}/conf ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/conf ${OPENHAB2_SHARE_PATH};
+        fi;
+
+        # Move addons if needed and symlink it
+        if [ ! -d ${OPENHAB2_SHARE_PATH}/addons ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/addons ${OPENHAB2_SHARE_PATH};
+        fi;
+
+        # Move userdata if needed and symlink it
+        if [ ! -d ${OPENHAB2_SHARE_PATH}/userdata ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/userdata ${OPENHAB2_SHARE_PATH};
+        fi;
+
+        # Removing umpacked files and link them to our share
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/conf
+        $CMD_LN -s ${OPENHAB2_SHARE_PATH}/conf ${SYS_QPKG_DIR}/distribution/conf
+        $CMD_CHMOD a+rw ${OPENHAB2_SHARE_PATH}/conf
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/addons
+        $CMD_LN -s ${OPENHAB2_SHARE_PATH}/addons ${SYS_QPKG_DIR}/distribution/addons
+        $CMD_CHMOD a+rw ${OPENHAB2_SHARE_PATH}/addons
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/userdata
+        $CMD_LN -s ${OPENHAB2_SHARE_PATH}/userdata ${SYS_QPKG_DIR}/distribution/userdata
+        $CMD_CHMOD a+rw ${OPENHAB2_SHARE_PATH}/userdata
+
+    fi;
+}
