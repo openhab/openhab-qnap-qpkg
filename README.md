@@ -9,8 +9,10 @@ openHAB Packages for QNAP NAS systems
   1. Creating a share called "openHAB2" (recommended)
   2. ~~Creating folder called "openHAB2" in "Public" share~~
   3. Not creating any of them and therefore using ".qpkg/openHAB2/distribution" for all data (for testing or demonstration)
-  
-3. Install the qpkg via "App Center" > "manual installation".
+ 
+3. Go to your NAS's App Center and make sure you have got "JRE" (for x86) or "JRE_ARM" installed. You can find the application via search function or under "Developer Tools".
+ 
+4. Finally install the qpkg via "Install Manually".
 
 ## How to uninstall
 1. Go to the "App Center" and remove the app like any other.
