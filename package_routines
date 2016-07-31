@@ -138,16 +138,26 @@ PKG_PRE_REMOVE="{
 #}
 #
 pkg_post_install(){
+    # Extraction of the distribution right from the QPKG
     $CMD_MKDIR ${SYS_QPKG_DIR}/distribution
     extract_data openhab-online-2.0.0.b3.tar.gz ${SYS_QPKG_DIR}/distribution
 
-    # Closed share path
-    get_share_path "openHAB2" OPENHAB2_SHARE_PATH
+    # Empty variable for choosing a location
+    USED_PATH=""
 
     # Public share path
     OPENHAB2_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB2
+    if [ -d ${OPENHAB2_PUBLIC_SHARE_PATH} ]; then
+        USED_PATH=OPENHAB2_SHARE_PATH
+    fi;
 
+    # (Restricted) separate share path
+    get_share_path "openHAB2" OPENHAB2_SHARE_PATH
     if [ -d ${OPENHAB2_SHARE_PATH} ]; then
+        USED_PATH=OPENHAB2_SHARE_PATH
+    fi;
+
+    if [ -z "${USED_PATH}" ]; then
         # Move conf if needed and symlink it
         if [ ! -d ${OPENHAB2_SHARE_PATH}/conf ]; then
             $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/conf ${OPENHAB2_SHARE_PATH};
