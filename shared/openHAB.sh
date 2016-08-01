@@ -2,7 +2,7 @@
 CONF=/etc/config/qpkg.conf
 QPKG_HTTP_PORT=8090
 QPKG_HTTPS_PORT=8444
-QPKG_NAME="openHAB2"
+QPKG_NAME="openHAB"
 QPKG_ROOT=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
 QPKG_DISTRIBUTION=${QPKG_ROOT}/distribution
 #QPKG_PIDFILE=${QPKG_ROOT}/${QPKG_NAME}.pid
@@ -77,7 +77,7 @@ case "$1" in
 #    if [ -f ${QPKG_PIDFILE} ]; then
 #        kill -9 $(cat ${QPKG_PIDFILE}) > ${QPKG_STDOUT}_kill 2> ${QPKG_STDERR}_kill
 #        rm ${QPKG_PIDFILE}
-    ${QPKG_STOP} > ${QPKG_STDOUT}_stop 2> ${QPKG_STDERR}_stop
+    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_STOP} > ${QPKG_STDOUT}_stop 2> ${QPKG_STDERR}_stop )
 #    else
 #        log_tool -t 1 -a  "$QPKG_NAME already stopped."
 #    fi
