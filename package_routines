@@ -148,41 +148,44 @@ pkg_post_install(){
     # Public share path
     OPENHAB_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB
     if [ -d ${OPENHAB_PUBLIC_SHARE_PATH} ]; then
-        USED_PATH=${OPENHAB_SHARE_PATH}
+        USED_PATH="${OPENHAB_SHARE_PATH}"
     fi;
 
     # (Restricted) separate share path
     get_share_path "openHAB" OPENHAB_SHARE_PATH
     if [ -d ${OPENHAB_SHARE_PATH} ]; then
-        USED_PATH=${OPENHAB_SHARE_PATH}
+        USED_PATH="${OPENHAB_SHARE_PATH}"
     fi;
 
-    if [ -z "${USED_PATH}" ]; then
+    if [ ! -z "${USED_PATH}" ]; then
         # Move conf if needed and symlink it
-        if [ ! -d ${OPENHAB_SHARE_PATH}/conf ]; then
-            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/conf ${OPENHAB_SHARE_PATH};
+        if [ ! -d ${USED_PATH}/conf ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/conf ${USED_PATH};
         fi;
 
         # Move addons if needed and symlink it
-        if [ ! -d ${OPENHAB_SHARE_PATH}/addons ]; then
-            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/addons ${OPENHAB_SHARE_PATH};
+        if [ ! -d ${USED_PATH}/addons ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/addons ${USED_PATH};
         fi;
 
         # Move userdata if needed and symlink it
-        if [ ! -d ${OPENHAB_SHARE_PATH}/userdata ]; then
-            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/userdata ${OPENHAB_SHARE_PATH};
+        if [ ! -d ${USED_PATH}/userdata ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/userdata ${USED_PATH};
         fi;
 
         # Removing unpacked files and link them to our share
+        ## conf
         $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/conf
-        $CMD_LN -s ${OPENHAB_SHARE_PATH}/conf ${SYS_QPKG_DIR}/distribution/conf
-        $CMD_CHMOD a+rw ${OPENHAB_SHARE_PATH}/conf
+        $CMD_LN -s ${USED_PATH}/conf ${SYS_QPKG_DIR}/distribution/conf
+        $CMD_CHMOD a+rw -R ${OPENHAB_SHARE_PATH}/conf
+        ## addons
         $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/addons
-        $CMD_LN -s ${OPENHAB_SHARE_PATH}/addons ${SYS_QPKG_DIR}/distribution/addons
-        $CMD_CHMOD a+rw ${OPENHAB_SHARE_PATH}/addons
+        $CMD_LN -s ${USED_PATH}/addons ${SYS_QPKG_DIR}/distribution/addons
+        $CMD_CHMOD a+rw -R ${USED_PATH}/addons
+        ## userdata
         $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/userdata
-        $CMD_LN -s ${OPENHAB_SHARE_PATH}/userdata ${SYS_QPKG_DIR}/distribution/userdata
-        $CMD_CHMOD a+rw ${OPENHAB_SHARE_PATH}/userdata
+        $CMD_LN -s ${USED_PATH}/userdata ${SYS_QPKG_DIR}/distribution/userdata
+        $CMD_CHMOD a+rw -R ${USED_PATH}/userdata
 
     fi;
 }
