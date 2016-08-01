@@ -19,3 +19,5 @@ openHAB Packages for QNAP NAS systems
 2. If wanted/needed also remove "addons", "conf" and "userdata" from the your directory, eg. "openHAB2" share or "Public"/openHAB2
   1. _REMEMBER_: If you have installed openHAB2 to ".qpkg" (see "How to install", section 2.3) then all files get removed directly!
   
+## Known issues
+* Wrong start/stop behaviour: https://github.com/openhab/openhab-distro/issues/258
