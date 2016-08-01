@@ -2,7 +2,7 @@
 openHAB Packages for QNAP NAS systems
 
 ## How to install
-1. ~~Download the QPKG from the releases section here on GitHub.~~
+1. Download the QPKG from the releases section here on GitHub.
 
 2. Create a directory for your addons, configurations and userdata, by
 
