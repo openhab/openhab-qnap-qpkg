@@ -146,43 +146,43 @@ pkg_post_install(){
     USED_PATH=""
 
     # Public share path
-    OPENHAB2_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB2
-    if [ -d ${OPENHAB2_PUBLIC_SHARE_PATH} ]; then
-        USED_PATH=OPENHAB2_SHARE_PATH
+    OPENHAB_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB
+    if [ -d ${OPENHAB_PUBLIC_SHARE_PATH} ]; then
+        USED_PATH=OPENHAB_SHARE_PATH
     fi;
 
     # (Restricted) separate share path
-    get_share_path "openHAB2" OPENHAB2_SHARE_PATH
-    if [ -d ${OPENHAB2_SHARE_PATH} ]; then
-        USED_PATH=OPENHAB2_SHARE_PATH
+    get_share_path "openHAB" OPENHAB_SHARE_PATH
+    if [ -d ${OPENHAB_SHARE_PATH} ]; then
+        USED_PATH=OPENHAB_SHARE_PATH
     fi;
 
     if [ -z "${USED_PATH}" ]; then
         # Move conf if needed and symlink it
-        if [ ! -d ${OPENHAB2_SHARE_PATH}/conf ]; then
-            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/conf ${OPENHAB2_SHARE_PATH};
+        if [ ! -d ${OPENHAB_SHARE_PATH}/conf ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/conf ${OPENHAB_SHARE_PATH};
         fi;
 
         # Move addons if needed and symlink it
-        if [ ! -d ${OPENHAB2_SHARE_PATH}/addons ]; then
-            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/addons ${OPENHAB2_SHARE_PATH};
+        if [ ! -d ${OPENHAB_SHARE_PATH}/addons ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/addons ${OPENHAB_SHARE_PATH};
         fi;
 
         # Move userdata if needed and symlink it
-        if [ ! -d ${OPENHAB2_SHARE_PATH}/userdata ]; then
-            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/userdata ${OPENHAB2_SHARE_PATH};
+        if [ ! -d ${OPENHAB_SHARE_PATH}/userdata ]; then
+            $CMD_CP -rf ${SYS_QPKG_DIR}/distribution/userdata ${OPENHAB_SHARE_PATH};
         fi;
 
-        # Removing umpacked files and link them to our share
+        # Removing unpacked files and link them to our share
         $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/conf
-        $CMD_LN -s ${OPENHAB2_SHARE_PATH}/conf ${SYS_QPKG_DIR}/distribution/conf
-        $CMD_CHMOD a+rw ${OPENHAB2_SHARE_PATH}/conf
+        $CMD_LN -s ${OPENHAB_SHARE_PATH}/conf ${SYS_QPKG_DIR}/distribution/conf
+        $CMD_CHMOD a+rw ${OPENHAB_SHARE_PATH}/conf
         $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/addons
-        $CMD_LN -s ${OPENHAB2_SHARE_PATH}/addons ${SYS_QPKG_DIR}/distribution/addons
-        $CMD_CHMOD a+rw ${OPENHAB2_SHARE_PATH}/addons
+        $CMD_LN -s ${OPENHAB_SHARE_PATH}/addons ${SYS_QPKG_DIR}/distribution/addons
+        $CMD_CHMOD a+rw ${OPENHAB_SHARE_PATH}/addons
         $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/userdata
-        $CMD_LN -s ${OPENHAB2_SHARE_PATH}/userdata ${SYS_QPKG_DIR}/distribution/userdata
-        $CMD_CHMOD a+rw ${OPENHAB2_SHARE_PATH}/userdata
+        $CMD_LN -s ${OPENHAB_SHARE_PATH}/userdata ${SYS_QPKG_DIR}/distribution/userdata
+        $CMD_CHMOD a+rw ${OPENHAB_SHARE_PATH}/userdata
 
     fi;
 }
