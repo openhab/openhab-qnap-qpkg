@@ -53,12 +53,14 @@ case "$1" in
 #    fi
 
     # Detecting PID of current instance while looking at instance.properties
-    QPKG_PID=$(sed -n -e '/item.0.pid/ s/.*\= *//p' ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties)
-    # Checking whether PID is still running
-    if [ x${QPKG_PID} != "x" ]; then
-        if [ -f /proc/${QPKG_PID}/status ] ; then
-            log_tool -t 1 -a $QPKG_NAME" is still running as <"${QPKG_PID}"> with status: "$(cat /proc/${QPKG_PID}/status)"."
-            exit 1
+    if [ -f ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties ]; then
+        QPKG_PID=$(sed -n -e '/item.0.pid/ s/.*\= *//p' ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties)
+        # Checking whether PID is still running
+        if [ x${QPKG_PID} != "x" ]; then
+            if [ -f /proc/${QPKG_PID}/status ] ; then
+                log_tool -t 1 -a $QPKG_NAME" is still running as <"${QPKG_PID}"> with status: "$(cat /proc/${QPKG_PID}/status)"."
+                exit 1
+            fi
         fi
     fi
 
