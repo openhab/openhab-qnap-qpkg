@@ -12,6 +12,7 @@ QPKG_STDERR=${QPKG_ROOT}/${QPKG_NAME}.stderr
 QPKG_START=${QPKG_DISTRIBUTION}/runtime/karaf/bin/start
 QPKG_STOP=${QPKG_DISTRIBUTION}/runtime/karaf/bin/stop
 QPKG_STATUS=${QPKG_DISTRIBUTION}/runtime/karaf/bin/status
+QPKG_CONSOLE=${QPKG_DISTRIBUTION}/start.sh
 case "$1" in
   start)
     ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f ${CONF})
@@ -100,8 +101,12 @@ case "$1" in
     exit ${QPKG_STATUS}
     ;;
 
+  console)
+    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE}
+    ;;
+
   *)
-    echo "Usage: $0 {start|stop|restart|status}"
+    echo "Usage: $0 {start|stop|restart|status|console}"
     exit 1
 esac
 
