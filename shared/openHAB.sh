@@ -98,7 +98,7 @@ case "$1" in
     ;;
 
   status)
-    exit ${QPKG_STATUS}
+    exit ${QPKG_STATUS} status
     ;;
 
   console)
