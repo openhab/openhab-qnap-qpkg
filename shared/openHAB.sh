@@ -5,6 +5,7 @@ QPKG_HTTPS_PORT=8444
 QPKG_NAME="openHAB"
 QPKG_ROOT=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
 QPKG_DISTRIBUTION=${QPKG_ROOT}/distribution
+QPKG_TMP=${QPKG_ROOT}/tmp
 #QPKG_PIDFILE=${QPKG_ROOT}/${QPKG_NAME}.pid
 QPKG_STDOUT=${QPKG_ROOT}/${QPKG_NAME}.stdout
 QPKG_STDERR=${QPKG_ROOT}/${QPKG_NAME}.stderr
@@ -107,8 +108,26 @@ case "$1" in
     cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE}
     ;;
 
+  snapshot-update)
+    # download snapshot
+    if [ -f openhab-online-SNAPSHOT.tar.gz ]; then
+        rm openhab-online-SNAPSHOT.tar.gz
+    fi
+    wget --show-progress \
+        --no-check-certificate \
+        -O openhab-online-SNAPSHOT.tar.gz \
+        https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.tar.gz
+
+    # extract runtime for snapshot and clean up
+    mkdir ${QPKG_TMP}
+    tar -xvzf openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
+    rm -rf ${QPKG_DISTRIBUTION}/runtime/
+    mv ${QPKG_TMP}/runtime/ distribution/
+    rm -rf ${QPKG_TMP}
+    ;;
+
   *)
-    echo "Usage: $0 {start|stop|restart|status|console}"
+    echo "Usage: $0 {start|stop|restart|status|console|snapshot-update}"
     exit 1
 esac
 
