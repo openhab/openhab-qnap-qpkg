@@ -122,6 +122,8 @@ case "$1" in
     mkdir ${QPKG_TMP}
     tar -xvzf openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
     rm -rf ${QPKG_DISTRIBUTION}/runtime/
+    rm -rf ${QPKG_DISTRIBUTION}/userdata/cache/*
+    rm -rf ${QPKG_DISTRIBUTION}/userdata/tmp/*
     mv ${QPKG_TMP}/runtime/ distribution/
     rm -rf ${QPKG_TMP}
     ;;
