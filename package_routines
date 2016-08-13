@@ -145,17 +145,18 @@ pkg_post_install(){
     # Empty variable for choosing a location
     USED_PATH=""
 
-    # Public share path
-    OPENHAB_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB
-    if [ -d ${OPENHAB_PUBLIC_SHARE_PATH} ]; then
-        USED_PATH="${OPENHAB_SHARE_PATH}"
-    fi;
+## Temporary disabled, see https://github.com/openhab/openhab-distro/issues/265
+#    # Public share path
+#    OPENHAB_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB
+#    if [ -d ${OPENHAB_PUBLIC_SHARE_PATH} ]; then
+#        USED_PATH="${OPENHAB_SHARE_PATH}"
+#    fi;
 
-    # (Restricted) separate share path
-    get_share_path "openHAB" OPENHAB_SHARE_PATH
-    if [ -d ${OPENHAB_SHARE_PATH} ]; then
-        USED_PATH="${OPENHAB_SHARE_PATH}"
-    fi;
+#    # (Restricted) separate share path
+#    get_share_path "openHAB" OPENHAB_SHARE_PATH
+#    if [ -d ${OPENHAB_SHARE_PATH} ]; then
+#        USED_PATH="${OPENHAB_SHARE_PATH}"
+#    fi;
 
     if [ ! -z "${USED_PATH}" ]; then
         # Move conf if needed and symlink it
