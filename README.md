@@ -1,7 +1,7 @@
 # openhab-qnap-qpkg
 openHAB Packages for QNAP NAS systems
 
- ![AppCenter enabled](docs/QTS_4.2.0_AppCenter%20enabled.png)
+![AppCenter enabled](docs/QTS_4.2.0_AppCenter%20enabled.png)
 
 ## How to install
 1. Download the QPKG from the releases section here on GitHub.
@@ -16,7 +16,23 @@ openHAB Packages for QNAP NAS systems
 
 4. Wait for a while until the Java installation has finished.
 
-5. Finally install the qpkg via "Install Manually".
+5. Open the "Install manually" dialog and choose the qpkg you have downloaded
+
+  ![AppCenter enabled](docs/QTS_4.2.0_AppCenter%20choose.png)
+
+6. Confirm the installation 
+
+  ![AppCenter enabled](docs/QTS_4.2.0_AppCenter%20confirm.png)
+
+7. Wait while the package is being installed
+
+  ![AppCenter enabled](docs/QTS_4.2.0_AppCenter%20installing.png)
+
+8. When finished just close the dialog and wait for a while until openHAB has completly started.
+
+  ![AppCenter enabled](docs/QTS_4.2.0_AppCenter%20finished.png)
+
+9. Access openHAB via ```http://<NAS_IP_or_DNS>:8090```
 
 ## How to uninstall
 1. Go to the "App Center" and remove the app like any other.
