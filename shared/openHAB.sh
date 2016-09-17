@@ -111,16 +111,16 @@ case "$1" in
   snapshot-update)
     # download snapshot
     if [ -f openhab-online-SNAPSHOT.tar.gz ]; then
-        rm openhab-online-SNAPSHOT.tar.gz
+        rm ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz
     fi
     wget --show-progress \
         --no-check-certificate \
-        -O openhab-online-SNAPSHOT.tar.gz \
+        -O ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz \
         https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.tar.gz
 
     # extract runtime for snapshot and clean up
     mkdir ${QPKG_TMP}
-    tar -xvzf openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
+    tar -xvzf ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
     rm -rf ${QPKG_DISTRIBUTION}/runtime/
     rm -rf ${QPKG_DISTRIBUTION}/userdata/cache/*
     rm -rf ${QPKG_DISTRIBUTION}/userdata/tmp/*
