@@ -108,6 +108,21 @@ case "$1" in
     cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE}
     ;;
 
+  snapshot-download)
+    # download snapshot
+    if [ -f openhab-online-SNAPSHOT.tar.gz ]; then
+        rm ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz
+    fi
+    wget --show-progress \
+        --no-check-certificate \
+        -O ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz \
+        https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.tar.gz
+
+    rm -rf ${QPKG_TMP}
+    mkdir -p ${QPKG_TMP}
+    tar -xvzf ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
+    ;;
+
   snapshot-update)
     # download snapshot
     if [ -f openhab-online-SNAPSHOT.tar.gz ]; then
@@ -119,7 +134,7 @@ case "$1" in
         https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.tar.gz
 
     # extract runtime for snapshot and clean up
-    mkdir ${QPKG_TMP}
+    mkdir -p ${QPKG_TMP}
     tar -xvzf ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
     rm -rf ${QPKG_DISTRIBUTION}/runtime/
     rm -rf ${QPKG_DISTRIBUTION}/userdata/cache/*
@@ -129,7 +144,7 @@ case "$1" in
     ;;
 
   *)
-    echo "Usage: $0 {start|stop|restart|status|console|snapshot-update}"
+    echo "Usage: $0 {start|stop|restart|status|console|snapshot-update|snapshot-download}"
     exit 1
 esac
 
