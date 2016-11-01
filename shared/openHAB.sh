@@ -1,4 +1,5 @@
 #!/bin/bash
+
 CONF=/etc/config/qpkg.conf
 QPKG_HTTP_PORT=8090
 QPKG_HTTPS_PORT=8444
@@ -14,6 +15,26 @@ QPKG_START=${QPKG_DISTRIBUTION}/runtime/karaf/bin/start
 QPKG_STOP=${QPKG_DISTRIBUTION}/runtime/karaf/bin/stop
 QPKG_STATUS=${QPKG_DISTRIBUTION}/runtime/karaf/bin/status
 QPKG_CONSOLE=${QPKG_DISTRIBUTION}/start.sh
+QPKG_SNAPSHOT_FLAVOUR=offline
+QPKG_SNAPSHOT_VERSION=2.0.0
+
+function downloadAndExtractSnapshot {
+    # download snapshot
+    if [ -f ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz ]; then
+        rm ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz
+    fi
+    wget --show-progress \
+        --no-check-certificate \
+        -O ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz \
+        https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-${QPKG_SNAPSHOT_FLAVOUR}/target/openhab-${QPKG_SNAPSHOT_FLAVOUR}-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz
+
+    # extract runtime for snapshot and clean up
+    rm -rf ${QPKG_TMP}
+    mkdir -p ${QPKG_TMP}
+    tar -xvzf ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
+
+}
+
 case "$1" in
   start)
     ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f ${CONF})
@@ -109,33 +130,15 @@ case "$1" in
     ;;
 
   snapshot-download)
-    # download snapshot
-    if [ -f openhab-online-SNAPSHOT.tar.gz ]; then
-        rm ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz
-    fi
-    wget --show-progress \
-        --no-check-certificate \
-        -O ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz \
-        https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.tar.gz
-
-    rm -rf ${QPKG_TMP}
-    mkdir -p ${QPKG_TMP}
-    tar -xvzf ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
+    # download and extract snapshot
+    downloadAndExtractSnapshot
     ;;
 
   snapshot-update)
-    # download snapshot
-    if [ -f openhab-online-SNAPSHOT.tar.gz ]; then
-        rm ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz
-    fi
-    wget --show-progress \
-        --no-check-certificate \
-        -O ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz \
-        https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-online/target/openhab-online-2.0.0-SNAPSHOT.tar.gz
+    # download and extract snapshot
+    downloadAndExtractSnapshot
 
-    # extract runtime for snapshot and clean up
-    mkdir -p ${QPKG_TMP}
-    tar -xvzf ${QPKG_ROOT}/openhab-online-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
+    # Remove and replace some directories from the existing OH2 installation
     rm -rf ${QPKG_DISTRIBUTION}/runtime/
     rm -rf ${QPKG_DISTRIBUTION}/userdata/cache/*
     rm -rf ${QPKG_DISTRIBUTION}/userdata/tmp/*
