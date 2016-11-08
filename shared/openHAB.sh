@@ -11,9 +11,9 @@ QPKG_TMP=${QPKG_ROOT}/tmp
 QPKG_STDOUT=${QPKG_ROOT}/${QPKG_NAME}.stdout
 QPKG_STDERR=${QPKG_ROOT}/${QPKG_NAME}.stderr
 #QPKG_START=${QPKG_ROOT}/distribution/start.sh
-QPKG_START=${QPKG_DISTRIBUTION}/runtime/karaf/bin/start
-QPKG_STOP=${QPKG_DISTRIBUTION}/runtime/karaf/bin/stop
-QPKG_STATUS=${QPKG_DISTRIBUTION}/runtime/karaf/bin/status
+QPKG_START=${QPKG_DISTRIBUTION}/runtime/bin/start
+QPKG_STOP=${QPKG_DISTRIBUTION}/runtime/bin/stop
+QPKG_STATUS=${QPKG_DISTRIBUTION}/runtime/bin/status
 QPKG_CONSOLE=${QPKG_DISTRIBUTION}/start.sh
 QPKG_SNAPSHOT_FLAVOUR=offline
 QPKG_SNAPSHOT_VERSION=2.0.0
@@ -137,6 +137,18 @@ case "$1" in
   snapshot-update)
     # download and extract snapshot
     downloadAndExtractSnapshot
+
+    ## Migration from the old folder layout to the new:
+    ## -> https://github.com/openhab/openhab-distro/pull/318
+    # Keeping karaf settings
+    if [ ! -d ${QPKG_DISTRIBUTION}/runtime/karaf/etc ]; then
+        cp -rf ${QPKG_DISTRIBUTION}/runtime/karaf/etc/* ${QPKG_TMP}/userdata/etc
+    fi
+    # Removing superfluous/orphaned files
+    rm -rf ${QPKG_DISTRIBUTION}/userdata/deploy
+    rm -rf ${QPKG_DISTRIBUTION}/userdata/kar
+    rm -rf ${QPKG_DISTRIBUTION}/userdata/lock
+    ## END: Migration
 
     # Remove and replace some directories from the existing OH2 installation
     rm -rf ${QPKG_DISTRIBUTION}/runtime/
