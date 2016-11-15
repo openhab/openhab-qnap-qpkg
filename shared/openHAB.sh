@@ -249,7 +249,7 @@ case "$1" in
     downloadJavaX64
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart|status|console|snapshot-update|snapshot-download|downloadJava}"
+    echo "Usage: $0 {start|stop|restart|status|console|backup|snapshot-update|snapshot-download|downloadJava}"
     exit 1
 esac
 
