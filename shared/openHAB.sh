@@ -5,6 +5,7 @@ QPKG_HTTP_PORT=8090
 QPKG_HTTPS_PORT=8444
 QPKG_NAME="openHAB"
 QPKG_ROOT=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
+QPKG_JAVA=${QPKG_ROOT}/java
 QPKG_DISTRIBUTION=${QPKG_ROOT}/distribution
 QPKG_TMP=${QPKG_ROOT}/tmp
 #QPKG_PIDFILE=${QPKG_ROOT}/${QPKG_NAME}.pid
@@ -17,6 +18,63 @@ QPKG_STATUS=${QPKG_DISTRIBUTION}/runtime/bin/status
 QPKG_CONSOLE=${QPKG_DISTRIBUTION}/start.sh
 QPKG_SNAPSHOT_FLAVOUR=offline
 QPKG_SNAPSHOT_VERSION=2.0.0
+
+function downloadJavaCommon {
+    echo "Please visit http://www.oracle.com/technetwork/java/javase/terms/license/index.html"
+    echo "and read the licence carefully. While downloading and using Oracle Java here, you agree the licence automatically."
+    read -p "Continue downloading Oracle Java (y/n)? " choice
+    case "$choice" in
+        y|Y )
+            echo "Let's continue downloading Oracle Java..."
+        ;;
+        n|N )
+            echo "Aborting download and installation..."
+            exit 1
+        ;;
+        * )
+            echo "Invalid input! Please rerun!"
+            exit 1
+        ;;
+    esac
+    if [ -f ${QPKG_ROOT}/jdk.tar.gz ]; then
+        rm ${QPKG_ROOT}/jdk.tar.gz
+    fi
+    wget --show-progress \
+         --no-check-certificate \
+         --no-cookies \
+         --header "Cookie: oraclelicense=accept-securebackup-cookie" \
+         -O ${QPKG_ROOT}/jdk.tar.gz \
+         $1
+    current_sum=$(md5sum ${QPKG_ROOT}/jdk.tar.gz | awk '{print $1}')
+    if [ x${current_sum} != x$2 ]; then
+        echo "Download failed!"
+        exit 1
+    fi
+    echo "Download was fine!"
+    rm -rf ${QPKG_JAVA}
+    mkdir -p ${QPKG_JAVA}
+    tar --strip-components=1 \
+        -xvzf \
+        ${QPKG_ROOT}/jdk.tar.gz \
+        --directory=${QPKG_JAVA}
+    exit 0
+}
+
+function downloadJavaArm32 {
+    downloadJavaCommon http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-arm32-vfp-hflt.tar.gz e74f9808168fb41570ee727e8e3f3366
+}
+
+function downloadJavaArm64 {
+    downloadJavaCommon http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-arm64-vfp-hflt.tar.gz 2f428b30b713542e3ed48fb7668bcfe2
+}
+
+function downloadJavaI586 {
+    downloadJavaCommon http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-i586.tar.gz f3399a2c00560a8f5f9a652f7c67e493
+}
+
+function downloadJavaX64 {
+    downloadJavaCommon http://download.oracle.com/otn-pub/java/jdk/8u111-b14/jdk-8u111-linux-x64.tar.gz 2d48badebe05c848cc3b4d6e0c53a457
+}
 
 function downloadAndExtractSnapshot {
     # download snapshot
@@ -43,19 +101,28 @@ case "$1" in
         exit 1
     fi
 
-    # Is JRE* enabled?
-    JRE_ENABLED=$(/sbin/getcfg JRE Enable -u -d FALSE -f ${CONF})
-    JRE_ARM_ENABLED=$(/sbin/getcfg JRE_ARM Enable -u -d FALSE -f ${CONF})
-    if [ "$JRE_ENABLED" != "TRUE" ] && [ "$JRE_ARM_ENABLED" != "TRUE" ]; then
-        log_tool -t 1 -a "Neither JRE nor JRE_ARM are enabled!"
-        exit 1
-    fi
+    # Is there our own JAVA installation?
+    if [ ! -d ${QPKG_JAVA} ]; then
+        # Is JRE* enabled?
+        JRE_ENABLED=$(/sbin/getcfg JRE Enable -u -d FALSE -f ${CONF})
+        JRE_ARM_ENABLED=$(/sbin/getcfg JRE_ARM Enable -u -d FALSE -f ${CONF})
+        if [ "$JRE_ENABLED" != "TRUE" ] && [ "$JRE_ARM_ENABLED" != "TRUE" ]; then
+            log_tool -t 1 -a "Java not enabled! Please read the documentation about details."
+            exit 1
+        fi
 
-    # Is there JAVA_HOME?
-    JAVA_HOME=/usr/local/jre
-    if [ ! -d ${JAVA_HOME} ]; then
-        log_tool -t 1 -a "JAVA_HOME not found!"
-        exit 1
+        # Is there JAVA_HOME?
+        JAVA_HOME=/usr/local/jre
+        if [ ! -d ${JAVA_HOME} ]; then
+            log_tool -t 1 -a "Java not found! Please read the documentation about details."
+            exit 1
+        fi
+    else
+        JAVA_HOME=${QPKG_JAVA}/jre
+        if [ ! -d ${JAVA_HOME} ]; then
+            log_tool -t 1 -a "Couldn't find JRE in our installation! Please read the documentation about details."
+            exit 1
+        fi
     fi
 
     # Are the ports already used?
@@ -129,6 +196,14 @@ case "$1" in
     cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE}
     ;;
 
+  backup)
+    cd ${QPKG_DISTRIBUTION}
+    mkdir -p ./backups
+    tar --exclude=./backups --exclude=./.Trash-1000 \
+        -vpczf backups/openHAB_backup-$(date --iso-8601=seconds).tar.gz \
+        .
+    ;;
+
   snapshot-download)
     # download and extract snapshot
     downloadAndExtractSnapshot
@@ -158,8 +233,23 @@ case "$1" in
     rm -rf ${QPKG_TMP}
     ;;
 
+  downloadJava)
+    echo "Usage: $0 {downloadJavaArm32|downloadJavaArm64|downloadJavaI586|downloadJavaX64}"
+    ;;
+  downloadJavaArm32)
+    downloadJavaArm32
+    ;;
+  downloadJavaArm64)
+    downloadJavaArm64
+    ;;
+  downloadJavaI586)
+    downloadJavaI586
+    ;;
+  downloadJavaX64)
+    downloadJavaX64
+    ;;
   *)
-    echo "Usage: $0 {start|stop|restart|status|console|snapshot-update|snapshot-download}"
+    echo "Usage: $0 {start|stop|restart|status|console|snapshot-update|snapshot-download|downloadJava}"
     exit 1
 esac
 
