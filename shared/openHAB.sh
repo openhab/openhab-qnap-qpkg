@@ -153,6 +153,9 @@ case "$1" in
         fi
     fi
 
+    # get timezone defined in system
+    export TZ=`/sbin/getcfg System "Time Zone" -f /etc/config/uLinux.conf`
+
     # Change to distribution directory and run openHAB2
     ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_START} > ${QPKG_STDOUT} 2> ${QPKG_STDERR} ) &
 #    echo $! > ${QPKG_PIDFILE}
