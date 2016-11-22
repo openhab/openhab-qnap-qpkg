@@ -154,7 +154,6 @@ case "$1" in
     fi
 
     # get timezone defined in system
-    Signed-off-by: Andreas Kress <Github@AndreasKress.de>
     export TZ=`/sbin/getcfg System "Time Zone" -f /etc/config/uLinux.conf`
 
     # Change to distribution directory and run openHAB2
