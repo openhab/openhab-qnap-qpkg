@@ -219,8 +219,9 @@ case "$1" in
     ## Migration from the old folder layout to the new:
     ## -> https://github.com/openhab/openhab-distro/pull/318
     # Keeping karaf settings
-    if [ ! -d ${QPKG_DISTRIBUTION}/runtime/karaf/etc ]; then
+    if [ -d ${QPKG_DISTRIBUTION}/runtime/karaf/etc ]; then
         cp -rf ${QPKG_DISTRIBUTION}/runtime/karaf/etc/* ${QPKG_TMP}/userdata/etc
+        rm -rf ${QPKG_DISTRIBUTION}/runtime/karaf/etc
     fi
     # Removing superfluous/orphaned files
     rm -rf ${QPKG_DISTRIBUTION}/userdata/deploy
