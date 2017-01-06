@@ -126,7 +126,7 @@ case "$1" in
     fi
 
     # Are the ports already used?
-    if lsof -Pi :${QPKG_HTTP_PORT} -sTCP:LISTEN -t >/dev/null && lsof -Pi :${QPKG_HTTPS_PORT} -sTCP:LISTEN -t >/dev/null; then
+    if lsof -Pi :${QPKG_HTTP_PORT} -sTCP:LISTEN -t > /dev/null && lsof -Pi :${QPKG_HTTPS_PORT} -sTCP:LISTEN -t > /dev/null; then
         log_tool -t 1 -a "Port ${QPKG_HTTP_PORT} or ${QPKG_HTTPS_PORT} already in use."
         exit 1
     fi
