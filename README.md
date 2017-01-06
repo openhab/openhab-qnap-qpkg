@@ -41,4 +41,3 @@ openHAB Packages for QNAP NAS systems
 
 ## Known issues
 * (1) Wrong start/stop behaviour: https://github.com/openhab/openhab-distro/issues/258
-* (2) Symlinked directory are not watched for changes: https://github.com/openhab/openhab-distro/issues/265
