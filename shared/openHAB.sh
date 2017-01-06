@@ -202,10 +202,16 @@ case "$1" in
     ;;
 
   backup)
+    mkdir -p ${QPKG_ROOT}/backups
     cd ${QPKG_DISTRIBUTION}
-    mkdir -p ./backups
-    tar --exclude=./backups --exclude=./.Trash-1000 \
-        -vpczf backups/openHAB_backup-$(date --iso-8601=seconds).tar.gz \
+    tar --exclude=./.Trash-1000 \
+        -vpczf \
+        ${QPKG_ROOT}/backups/openHAB_backup-$(date --iso-8601=seconds).tar.gz \
+        .
+    cd ${QPKG_JAVA}
+    tar --exclude=./.Trash-1000 \
+        -vpczf \
+        ${QPKG_ROOT}/backups/openHAB_backup-java-$(date --iso-8601=seconds).tar.gz \
         .
     ;;
 
