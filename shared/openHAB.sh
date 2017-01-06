@@ -95,14 +95,7 @@ function downloadAndExtractSnapshot {
 
 }
 
-case "$1" in
-  start)
-    ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f ${CONF})
-    if [ "$ENABLED" != "TRUE" ]; then
-        echo "$QPKG_NAME is disabled."
-        exit 1
-    fi
-
+function setupEnvironment {
     # Is there our own JAVA installation?
     if [ ! -d ${QPKG_JAVA} ]; then
         # Is JRE* enabled?
@@ -127,11 +120,24 @@ case "$1" in
         fi
     fi
 
+    echo "JAVA_HOME is: "$JAVA_HOME
+}
+
+case "$1" in
+  start)
+    ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f ${CONF})
+    if [ "$ENABLED" != "TRUE" ]; then
+        echo "$QPKG_NAME is disabled."
+        exit 1
+    fi
+
     # Are the ports already used?
     if lsof -Pi :${QPKG_HTTP_PORT} -sTCP:LISTEN -t > /dev/null && lsof -Pi :${QPKG_HTTPS_PORT} -sTCP:LISTEN -t > /dev/null; then
         log_tool -t 1 -a "Port ${QPKG_HTTP_PORT} or ${QPKG_HTTPS_PORT} already in use."
         exit 1
     fi
+
+    setupEnvironment
 
 #    # Is there a pidfile?
 #    if [ -f ${QPKG_PIDFILE} ]; then
@@ -171,6 +177,7 @@ case "$1" in
     ;;
 
   stop)
+    setupEnvironment
 #    if [ -f ${QPKG_PIDFILE} ]; then
 #        kill -9 $(cat ${QPKG_PIDFILE}) > ${QPKG_STDOUT}_kill 2> ${QPKG_STDERR}_kill
 #        rm ${QPKG_PIDFILE}
@@ -194,10 +201,13 @@ case "$1" in
     ;;
 
   status)
-    exit ${QPKG_STATUS} status
+    setupEnvironment
+    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} exit 
+${QPKG_STATUS} status
     ;;
 
   console)
+    setupEnvironment
     cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE}
     ;;
 
