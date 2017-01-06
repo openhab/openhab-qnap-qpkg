@@ -251,8 +251,13 @@ ${QPKG_STATUS} status
     rm -rf ${QPKG_DISTRIBUTION}/runtime/
     rm -rf ${QPKG_DISTRIBUTION}/userdata/cache/*
     rm -rf ${QPKG_DISTRIBUTION}/userdata/tmp/*
-    mv ${QPKG_TMP}/runtime/ distribution/
-    rm -rf ${QPKG_TMP}
+    mv ${QPKG_TMP}/userdata/tmp/* ${QPKG_DISTRIBUTION}/userdata/tmp/
+    rm -rf ${QPKG_DISTRIBUTION}/userdata/etc-old
+    if [ -d ${QPKG_DISTRIBUTION}/userdata/etc ]; then
+        mv ${QPKG_DISTRIBUTION}/userdata/etc ${QPKG_DISTRIBUTION}/userdata/etc-old
+    fi
+    mv ${QPKG_TMP}/userdata/etc ${QPKG_DISTRIBUTION}/userdata/etc
+    mv ${QPKG_TMP}/runtime/ ${QPKG_DISTRIBUTION}
     ;;
 
   downloadJava)
