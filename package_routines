@@ -140,7 +140,7 @@ PKG_PRE_REMOVE="{
 pkg_post_install(){
     # Extraction of the distribution right from the QPKG
     $CMD_MKDIR ${SYS_QPKG_DIR}/distribution
-    extract_data openhab-online-2.0.0.b4.tar.gz ${SYS_QPKG_DIR}/distribution
+    extract_data openhab-online-2.0.0.b5.tar.gz ${SYS_QPKG_DIR}/distribution
 
     # Empty variable for choosing a location
     USED_PATH=""
