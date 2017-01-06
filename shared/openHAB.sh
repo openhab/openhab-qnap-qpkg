@@ -77,7 +77,7 @@ function downloadJavaX64 {
 }
 
 function downloadAndExtractSnapshot {
-    # download snapshot
+    # Download snapshot
     if [ -f ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz ]; then
         rm ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz
     fi
@@ -86,8 +86,10 @@ function downloadAndExtractSnapshot {
         -O ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz \
         https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab-${QPKG_SNAPSHOT_FLAVOUR}/target/openhab-${QPKG_SNAPSHOT_FLAVOUR}-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz
 
-    # extract runtime for snapshot and clean up
-    rm -rf ${QPKG_TMP}
+    # Extract runtime for snapshot and clean up
+    if [ -d ${QPKG_TMP} ]; then
+        rm -rf ${QPKG_TMP}
+    fi
     mkdir -p ${QPKG_TMP}
     tar -xvzf ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
 
