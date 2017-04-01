@@ -105,6 +105,7 @@
 ######################################################################
 PKG_PRE_REMOVE="{
     $CMD_RM -rf ${SYS_QPKG_DIR}/distribution
+    $CMD_RM -rf ${SYS_QPKG_DIR}/java
 }"
 #
 #PKG_MAIN_REMOVE="{
@@ -138,9 +139,35 @@ PKG_PRE_REMOVE="{
 #}
 #
 pkg_post_install(){
-    # Extraction of the distribution right from the QPKG
-    $CMD_MKDIR ${SYS_QPKG_DIR}/distribution
-    extract_data openhab-2.0.0.tar.gz ${SYS_QPKG_DIR}/distribution
+    # Make sure there is no tmp directory and create an empty one
+    if [ -d ${SYS_QPKG_DIR}/distribution-tmp ]; then
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution-tmp;
+    fi;
+    $CMD_MKDIR ${SYS_QPKG_DIR}/distribution-tmp
+
+    # Extract new data from tar.gz archive
+    extract_data openhab-2.0.0.tar.gz ${SYS_QPKG_DIR}/distribution-tmp
+
+    # Keeping addons, conf and userdata from current install (if existing)
+    if [ -d ${SYS_QPKG_DIR}/distribution/addons ]; then
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution-tmp/addons;
+        $CMD_MV ${SYS_QPKG_DIR}/distribution/addons ${SYS_QPKG_DIR}/distribution-tmp/;
+    fi;
+    if [ -d ${SYS_QPKG_DIR}/distribution/conf ]; then
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution-tmp/conf;
+        $CMD_MV ${SYS_QPKG_DIR}/distribution/conf ${SYS_QPKG_DIR}/distribution-tmp/;
+    fi;
+    if [ -d ${SYS_QPKG_DIR}/distribution/userdata ]; then
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution-tmp/userdata;
+        $CMD_MV ${SYS_QPKG_DIR}/distribution/userdata ${SYS_QPKG_DIR}/distribution-tmp/;
+    fi;
+
+    if [ -d ${SYS_QPKG_DIR}/distribution ]; then
+        $CMD_RM -rf ${SYS_QPKG_DIR}/distribution;
+    fi;
+
+    # Make our tmp directory the final one
+    $CMD_MV ${SYS_QPKG_DIR}/distribution-tmp ${SYS_QPKG_DIR}/distribution
 
     # Empty variable for choosing a location
     USED_PATH=""
@@ -148,13 +175,13 @@ pkg_post_install(){
     # Public share path
     OPENHAB_PUBLIC_SHARE_PATH=$SYS_PUBLIC_PATH/openHAB
     if [ -d ${OPENHAB_PUBLIC_SHARE_PATH} ]; then
-        USED_PATH="${OPENHAB_SHARE_PATH}"
+        USED_PATH="${OPENHAB_SHARE_PATH}";
     fi;
 
     # (Restricted) separate share path
     get_share_path "openHAB" OPENHAB_SHARE_PATH
     if [ -d ${OPENHAB_SHARE_PATH} ]; then
-        USED_PATH="${OPENHAB_SHARE_PATH}"
+        USED_PATH="${OPENHAB_SHARE_PATH}";
     fi;
 
     if [ ! -z "${USED_PATH}" ]; then
@@ -186,6 +213,5 @@ pkg_post_install(){
         $CMD_RM -rf ${SYS_QPKG_DIR}/distribution/userdata
         $CMD_LN -s ${USED_PATH}/userdata ${SYS_QPKG_DIR}/distribution/userdata
         $CMD_CHMOD a+rw -R ${USED_PATH}/userdata
-
     fi;
 }
