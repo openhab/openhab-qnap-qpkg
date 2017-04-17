@@ -96,6 +96,7 @@ function downloadAndExtractSnapshot {
 }
 
 function setupEnvironment {
+    ## JAVA SETUP
     # Is there our own JAVA installation?
     if [ ! -d ${QPKG_JAVA} ]; then
         # Is JRE* enabled?
@@ -121,6 +122,36 @@ function setupEnvironment {
     fi
 
     echo "* Note: JAVA_HOME="$JAVA_HOME
+
+    ## PORT SETUP
+    # Default ports
+    OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT}
+    OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT}
+
+    # http port
+    if [ -f ${QPKG_DISTRIBUTION}/conf/qpkg/http.port ]; then
+        typeset -i OPENHAB_HTTP_PORT=$(cat ${QPKG_DISTRIBUTION}/conf/qpkg/http.port)
+    fi
+    if [ "$OPENHAB_HTTP_PORT" -eq "0" ]; then
+        OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT}
+        log_tool -t 1 -a "Your http port definition is fautly. Using default ${OPENHAB_HTTP_PORT} instead!"
+    fi
+    # https port
+    if [ -f ${QPKG_DISTRIBUTION}/conf/qpkg/https.port ]; then
+        typeset -i OPENHAB_HTTPS_PORT=$(cat ${QPKG_DISTRIBUTION}/conf/qpkg/https.port)
+    fi
+    if [ "$OPENHAB_HTTP_PORT" -eq "0" ]; then
+        OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT}
+        log_tool -t 1 -a "Your http port definition is fautly. Using default ${OPENHAB_HTTPS_PORT} instead!"
+    fi
+
+    # Are the ports already used?
+    if lsof -Pi :${OPENHAB_HTTP_PORT} -sTCP:LISTEN -t > /dev/null && lsof -Pi :${OPENHAB_HTTPS_PORT} -sTCP:LISTEN -t > /dev/null; then
+        log_tool -t 1 -a "Port ${OPENHAB_HTTP_PORT} or ${OPENHAB_HTTPS_PORT} already in use."
+        exit 1
+    fi
+
+
 }
 
 case "$1" in
@@ -128,12 +159,6 @@ case "$1" in
     ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f ${CONF})
     if [ "$ENABLED" != "TRUE" ]; then
         echo "$QPKG_NAME is disabled."
-        exit 1
-    fi
-
-    # Are the ports already used?
-    if lsof -Pi :${QPKG_HTTP_PORT} -sTCP:LISTEN -t > /dev/null && lsof -Pi :${QPKG_HTTPS_PORT} -sTCP:LISTEN -t > /dev/null; then
-        log_tool -t 1 -a "Port ${QPKG_HTTP_PORT} or ${QPKG_HTTPS_PORT} already in use."
         exit 1
     fi
 
@@ -165,7 +190,7 @@ case "$1" in
     export TZ=`/sbin/getcfg System "Time Zone" -f /etc/config/uLinux.conf`
 
     # Change to distribution directory and run openHAB2
-    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_START} > ${QPKG_STDOUT} 2> ${QPKG_STDERR} ) &
+    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${OPENHAB_HTTP_PORT} OPENHAB_HTTPS_PORT=${OPENHAB_HTTPS_PORT} ${QPKG_START} > ${QPKG_STDOUT} 2> ${QPKG_STDERR} ) &
 #    echo $! > ${QPKG_PIDFILE}
 
 #    # Renice new pid - TODO: Needs more testing
