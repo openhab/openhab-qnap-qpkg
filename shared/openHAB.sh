@@ -199,6 +199,9 @@ case "$1" in
 #    QPKG_PID=$(sed -n -e '/item.0.pid/ s/.*\= *//p' ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties)
 #    renice -10 ${QPKG_PID}
 #    log_tool -t 1 -a "Reniced karaf process "${QPKG_PID}" to "$(awk '{print $19}' /proc/${QPKG_PID}/stat)
+
+    # TODO: WORKAROUND: Waiting one and a half minute until the service is properly turned on
+    sleep 90
     ;;
 
   stop)
@@ -210,6 +213,9 @@ case "$1" in
 #    else
 #        log_tool -t 1 -a  "$QPKG_NAME already stopped."
 #    fi
+
+    # TODO: WORKAROUND: Waiting one minute until the service is properly turned off
+    sleep 60
     ;;
 
   restart)
