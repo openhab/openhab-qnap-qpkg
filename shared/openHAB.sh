@@ -140,7 +140,7 @@ function setupEnvironment {
     if [ -f ${QPKG_DISTRIBUTION}/conf/qpkg/https.port ]; then
         typeset -i OPENHAB_HTTPS_PORT=$(cat ${QPKG_DISTRIBUTION}/conf/qpkg/https.port)
     fi
-    if [ "$OPENHAB_HTTP_PORT" -eq "0" ]; then
+    if [ "$OPENHAB_HTTPS_PORT" -eq "0" ]; then
         OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT}
         log_tool -t 1 -a "Your http port definition is fautly. Using default ${OPENHAB_HTTPS_PORT} instead!"
     fi
