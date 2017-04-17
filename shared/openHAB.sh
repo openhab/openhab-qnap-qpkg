@@ -120,7 +120,7 @@ function setupEnvironment {
         fi
     fi
 
-    echo "JAVA_HOME is: "$JAVA_HOME
+    echo "* Note: JAVA_HOME="$JAVA_HOME
 }
 
 case "$1" in
@@ -202,7 +202,7 @@ case "$1" in
 
   status)
     setupEnvironment
-    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} exit 
+    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} exit
 ${QPKG_STATUS} status
     ;;
 
