@@ -144,14 +144,16 @@ function setupEnvironment {
         OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT}
         log_tool -t 1 -a "Your http port definition is fautly. Using default ${OPENHAB_HTTPS_PORT} instead!"
     fi
+    echo "* Note: OPENHAB_HTTP_PORT="$OPENHAB_HTTP_PORT
+    echo "* Note: OPENHAB_HTTPS_PORT="$OPENHAB_HTTPS_PORT
+}
 
+function checkPorts {
     # Are the ports already used?
     if lsof -Pi :${OPENHAB_HTTP_PORT} -sTCP:LISTEN -t > /dev/null && lsof -Pi :${OPENHAB_HTTPS_PORT} -sTCP:LISTEN -t > /dev/null; then
         log_tool -t 1 -a "Port ${OPENHAB_HTTP_PORT} or ${OPENHAB_HTTPS_PORT} already in use."
         exit 1
     fi
-
-
 }
 
 case "$1" in
@@ -163,6 +165,7 @@ case "$1" in
     fi
 
     setupEnvironment
+    checkPorts
 
 #    # Is there a pidfile?
 #    if [ -f ${QPKG_PIDFILE} ]; then
@@ -239,6 +242,8 @@ ${QPKG_STATUS} status
 
   console)
     setupEnvironment
+    checkPorts
+
     cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE}
     ;;
 
