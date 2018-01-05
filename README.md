@@ -5,8 +5,8 @@ openHAB Packages for QNAP NAS systems
 1. Download the QPKG from the [releases section over on GitHub](https://github.com/openhab/openhab-qnap-qpkg/releases).
 
 2. Create a directory for your addons, configurations and userdata, by either
-    * Creating a share called "openHAB2" (recommended)
-    * Creating a folder called "openHAB2" inside the "Public" share
+    * Creating a share called "openHAB" (recommended)
+    * Creating a folder called "openHAB" inside the "Public" share
     * Not creating any of them and therefore using `.qpkg/openHAB2/distribution` for all data (for testing or demonstration)
 
 3. Go to your NAS's App Center and make sure you have got "JRE" (for x86-CPU based NAS) or "JRE_ARM" (for ARM-CPU based NAS) installed. If that is not the case, go to the "Developer-Tools" section of the App Center, install the appropriate version and wait for a while until the Java installation has finished.
@@ -32,7 +32,7 @@ openHAB Packages for QNAP NAS systems
 If you want to keep configuration files, copy them to a save place outside of the openhab-path.
 
 1. Go to the "App Center" and remove the app like any other.
-2. Additionally if wanted or needed, please remove the folders "addons", "conf" and "userdata" from the your directory, eg. "openHAB2" share or "Public"/openHAB2
+2. Additionally if wanted or needed, please remove the folders "addons", "conf" and "userdata" from the your directory, eg. "openHAB" share or "Public"/openHAB"
    If you have installed openHAB2 to `.qpkg` (see "How to install", third option) then all files get removed automatically.
 
 ## Known issues
