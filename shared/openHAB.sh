@@ -17,7 +17,7 @@ QPKG_STOP=${QPKG_DISTRIBUTION}/runtime/bin/stop
 QPKG_STATUS=${QPKG_DISTRIBUTION}/runtime/bin/status
 QPKG_CONSOLE=${QPKG_DISTRIBUTION}/start.sh
 QPKG_SNAPSHOT_FLAVOUR=offline
-QPKG_SNAPSHOT_VERSION=2.1.0
+QPKG_SNAPSHOT_VERSION=2.3.0
 
 function downloadJavaCommon {
     echo "Please visit http://www.oracle.com/technetwork/java/javase/terms/license/index.html"
