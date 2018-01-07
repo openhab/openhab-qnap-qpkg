@@ -1,6 +1,9 @@
 # openhab-qnap-qpkg
 openHAB Packages for QNAP NAS systems
 
+## Requirements
+* QTS firmware version minimum 4.1.0
+
 ## How to install
 1. Download the QPKG from the [releases section over on GitHub](https://github.com/openhab/openhab-qnap-qpkg/releases).
 
