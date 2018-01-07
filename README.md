@@ -4,7 +4,7 @@ openHAB Packages for QNAP NAS systems
 ## Requirements
 * QTS firmware version minimum 4.1.0
 * At least Java 1.8.101 is required
-* The running service needs after installation about 200MB of System Memory. If QTS does swapping, you could experience speed problems if you have too less RAM.
+* The running service needs after installation about 200MB of System Memory. When adding bindings like Z-Wave, the amount of RAM used can rise above 1GB. If QTS does swapping, you could experience speed problems if you have too less RAM.
 
 ## How to install
 1. Download the QPKG from the [releases section over on GitHub](https://github.com/openhab/openhab-qnap-qpkg/releases).
