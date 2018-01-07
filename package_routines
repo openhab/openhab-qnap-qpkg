@@ -146,7 +146,8 @@ pkg_post_install(){
     $CMD_MKDIR ${SYS_QPKG_DIR}/distribution-tmp
 
     # Extract new data from tar.gz archive
-    extract_data openhab-2.0.0.tar.gz ${SYS_QPKG_DIR}/distribution-tmp
+    # extract_data openhab-2.2.0.zip ${SYS_QPKG_DIR}/distribution-tmp
+    $CMD_7Z x openhab-2.2.0.zip -o${SYS_QPKG_DIR}/distribution-tmp
 
     # Keeping addons, conf and userdata from current install (if existing)
     if [ -d ${SYS_QPKG_DIR}/distribution/addons ]; then

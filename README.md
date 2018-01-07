@@ -37,3 +37,4 @@ If you want to keep configuration files, copy them to a save place outside of th
 
 ## Known issues
 * (1) Wrong start/stop behaviour: https://github.com/openhab/openhab-distro/issues/258
+* (2) Version 2.2.0 has problems with update from previous versions. 
