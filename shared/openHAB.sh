@@ -109,7 +109,7 @@ function setupEnvironment {
 
         # Is there JAVA_HOME?
         JAVA_HOME=/usr/local/jre
-        if [ ! -d ${JAVA_HOME} ]; then
+        if [ ! -e ${JAVA_HOME} ]; then
             log_tool -t 1 -a "Java not found! Please read the documentation about details."
             exit 1
         fi
@@ -178,8 +178,8 @@ case "$1" in
 #    fi
 
     # Detecting PID of current instance while looking at instance.properties
-    if [ -f ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties ]; then
-        QPKG_PID=$(sed -n -e '/item.0.pid/ s/.*\= *//p' ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties)
+    if [ -f ${QPKG_DISTRIBUTION}/runtime/instances/instance.properties ]; then
+        QPKG_PID=$(sed -n -e '/item.0.pid/ s/.*\= *//p' ${QPKG_DISTRIBUTION}/runtime/instances/instance.properties)
         # Checking whether PID is still running
         if [ x${QPKG_PID} != "x" ]; then
             if [ -f /proc/${QPKG_PID}/status ] ; then
@@ -219,6 +219,12 @@ case "$1" in
 
     # TODO: WORKAROUND: Waiting one minute until the service is properly turned off
     sleep 60
+    # If openHAB not really running, then it's ok to remove the instance.properties file
+    ps -ef | grep java | grep openHAB | grep -v grep
+    if [ $? != 0 ]; then
+        rm ${QPKG_DISTRIBUTION}/runtime/instances/instance.properties
+    fi
+
     ;;
 
   restart)
