@@ -5,6 +5,7 @@ QPKG_HTTP_PORT=8090
 QPKG_HTTPS_PORT=8444
 QPKG_NAME="openHAB"
 QPKG_ROOT=`/sbin/getcfg $QPKG_NAME Install_Path -f ${CONF}`
+# QPKG_ROOT = /sbin/getcfg openHAB Install_Path -f /etc/config/qpkg.conf := /share/MD0_DATA/.qpkg/openHAB
 QPKG_JAVA=${QPKG_ROOT}/java
 QPKG_DISTRIBUTION=${QPKG_ROOT}/distribution
 QPKG_TMP=${QPKG_ROOT}/tmp
@@ -17,7 +18,7 @@ QPKG_STOP=${QPKG_DISTRIBUTION}/runtime/bin/stop
 QPKG_STATUS=${QPKG_DISTRIBUTION}/runtime/bin/status
 QPKG_CONSOLE=${QPKG_DISTRIBUTION}/start.sh
 QPKG_SNAPSHOT_FLAVOUR=offline
-QPKG_SNAPSHOT_VERSION=2.3.0
+QPKG_SNAPSHOT_VERSION=2.5.7
 
 function downloadJavaCommon {
     echo "Please visit http://www.oracle.com/technetwork/java/javase/terms/license/index.html"
@@ -78,22 +79,43 @@ function downloadJavaX64 {
 
 function downloadAndExtractSnapshot {
     # Download snapshot
-    if [ -f ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz ]; then
-        rm ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz
+    if [ -f ${QPKG_ROOT}/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz ]; then
+        rm ${QPKG_ROOT}/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz
     fi
+	# down: https://openhab.ci.cloudbees.com /job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab/target/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz
+	# read: https://github.com/openhab/openhab-docs/issues/825 and change reference to https://ci.openhab.org/
     wget --show-progress \
         --no-check-certificate \
-        -O ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz \
-        https://openhab.ci.cloudbees.com/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab/target/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz
-
+        -O ${QPKG_ROOT}/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz \
+		https://ci.openhab.org/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab/target/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz
     # Extract runtime for snapshot and clean up
     if [ -d ${QPKG_TMP} ]; then
         rm -rf ${QPKG_TMP}
     fi
     mkdir -p ${QPKG_TMP}
-    tar -xvzf ${QPKG_ROOT}/openhab-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
+    tar -xvzf ${QPKG_ROOT}/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz --directory=${QPKG_TMP}
 
 }
+
+function CheckSnapshot {
+	echo "The downloadAndExtractSnapshot function will use the following:"
+	echo "Version: ${QPKG_SNAPSHOT_VERSION} (as hard coded) for at root directory ${QPKG_ROOT} "
+	echo "Distribution location: ${QPKG_DISTRIBUTION} "
+	echo "data from (fixed): https://ci.openhab.org/job/openHAB-Distribution/lastSuccessfulBuild/artifact/distributions/openhab/target/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz "
+	echo "to file: ${QPKG_ROOT}/openhab-${QPKG_SNAPSHOT_VERSION}-SNAPSHOT.tar.gz "
+	echo "is unpacked via tar -xvzf into: directory ${QPKG_TMP} "
+	echo ""
+	echo "The updateSnapshot will downloadAndExtractSnapshot and upgrade/replace data in place"
+	echo " * move karaf/etc settings (if any) to ${QPKG_ROOT}/openHAB/tmp/userdata/etc "
+	echo " * cleanup (if any) Karaf deployments in the distribtion"
+	echo " * upgrade ${QPKG_ROOT}/openhab/distribution/userdata/tmp from SNAPshot"
+	echo " * update ${QPKG_ROOT}/openhab/distribution/userdata/etc from SNAPshot"
+	echo " * upgrade ${QPKG_ROOT}/openhab/distribution/runtime from SNAPshot"
+	echo ""
+	echo "Note: on this QNAP, the /etc/config/qpkg.conf is actually on /mnt/HDA_ROOT/.config/qpkg.conf"
+	echo "wehich might require manual chage to reflect version. Ensure that openHAB is not active"
+}
+
 
 function setupEnvironment {
     ## JAVA SETUP
@@ -142,7 +164,7 @@ function setupEnvironment {
     fi
     if [ "$OPENHAB_HTTPS_PORT" -eq "0" ]; then
         OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT}
-        log_tool -t 1 -a "Your http port definition is fautly. Using default ${OPENHAB_HTTPS_PORT} instead!"
+        log_tool -t 1 -a "Your http port definition is faulty. Using default ${OPENHAB_HTTPS_PORT} instead!"
     fi
     echo "* Note: OPENHAB_HTTP_PORT="$OPENHAB_HTTP_PORT
     echo "* Note: OPENHAB_HTTPS_PORT="$OPENHAB_HTTPS_PORT
@@ -157,10 +179,91 @@ function checkPorts {
 }
 
 case "$1" in
+  mstop)
+    setupEnvironment
+#    if [ -f ${QPKG_PIDFILE} ]; then
+#        kill -9 $(cat ${QPKG_PIDFILE}) > ${QPKG_STDOUT}_kill 2> ${QPKG_STDERR}_kill
+#        rm ${QPKG_PIDFILE}
+    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_STOP}  )
+#    else
+#        log_tool -t 1 -a  "$QPKG_NAME already stopped."
+#    fi
+
+    # TODO: WORKAROUND: Waiting one minute until the service is properly turned off
+    echo  "stopped."
+    ;;
+
+  check)
+     CheckSnapshot
+	;;
+  restart)
+    echo "stop script=" $QPKG_STOP ", start=" $QPKG_START
+    if ${QPKG_STOP} ; then
+		echo "openHAB.sh:  STOP executed"
+		if ${QPKG_START}
+		then
+			echo "openHAB.sh:  START executed"
+			exit 0
+		else
+			echo "openHAB.sh:  START executed; exitcode 1"
+			exit 1
+		fi
+	else
+		echo "openHAB.sh:  STOP executed; exitcode 1"
+		exit 1
+	fi
+    ;;
+
+  mstart)
+ 
+    setupEnvironment
+    checkPorts
+
+#    # Is there a pidfile?
+#    if [ -f ${QPKG_PIDFILE} ]; then
+#        if [ -f /proc/$(cat ${QPKG_PIDFILE})/status ] ; then
+#            log_tool -t 1 -a "$QPKG_NAME is already running as <"$(cat ${QPKG_PIDFILE})"> with status: "$(cat /proc/$(cat ${QPKG_PIDFILE})/status)"."
+#            exit 1
+#        else
+#            rm ${QPKG_PIDFILE}
+#        fi
+#    fi
+
+    # Detecting PID of current instance while looking at instance.properties
+    if [ -f ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties ]; then
+        QPKG_PID=$(sed -n -e '/item.0.pid/ s/.*\= *//p' ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties)
+        # Checking whether PID is still running
+        if [ x${QPKG_PID} != "x" ]; then
+            if [ -f /proc/${QPKG_PID}/status ] ; then
+                log_tool -t 1 -a $QPKG_NAME" is still running as <"${QPKG_PID}"> with status: "$(cat /proc/${QPKG_PID}/status)"."
+                exit 1
+            fi
+        fi
+    fi
+
+    # Get timezone defined in system
+    export TZ=`/sbin/getcfg System "Time Zone" -f /etc/config/uLinux.conf`
+
+    # Change to distribution directory and run openHAB2
+    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${OPENHAB_HTTP_PORT} OPENHAB_HTTPS_PORT=${OPENHAB_HTTPS_PORT} ${QPKG_START}  ) &
+	log_tool -t 1 -a "openhab started "${QPKG_PID}" to "$(awk '{print $19}' /proc/${QPKG_PID}/stat)
+
+#    # Renice new pid - TODO: Needs more testing
+     sleep 3
+     sync
+     QPKG_PID=$(sed -n -e '/item.0.pid/ s/.*\= *//p' ${QPKG_DISTRIBUTION}/runtime/karaf/instances/instance.properties)
+     renice -10 ${QPKG_PID}
+     log_tool -t 1 -a "Reniced karaf process "${QPKG_PID}" to "$(awk '{print $19}' /proc/${QPKG_PID}/stat)
+
+    # TODO: WORKAROUND: Waiting one and a half minute until the service is properly turned on
+    echo "Started manually"
+    ;;
+
+  
   start)
     ENABLED=$(/sbin/getcfg ${QPKG_NAME} Enable -u -d FALSE -f ${CONF})
     if [ "$ENABLED" != "TRUE" ]; then
-        echo "$QPKG_NAME is disabled."
+        echo $QPKG_NAME "is disabled."
         exit 1
     fi
 
@@ -193,7 +296,9 @@ case "$1" in
     export TZ=`/sbin/getcfg System "Time Zone" -f /etc/config/uLinux.conf`
 
     # Change to distribution directory and run openHAB2
-    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${OPENHAB_HTTP_PORT} OPENHAB_HTTPS_PORT=${OPENHAB_HTTPS_PORT} ${QPKG_START} > ${QPKG_STDOUT} 2> ${QPKG_STDERR} ) &
+    echo "QPKG_START="$QPKG_START
+    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${OPENHAB_HTTP_PORT} OPENHAB_HTTPS_PORT=${OPENHAB_HTTPS_PORT} ${QPKG_START} )
+  # ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${OPENHAB_HTTP_PORT} OPENHAB_HTTPS_PORT=${OPENHAB_HTTPS_PORT} ${QPKG_START} > ${QPKG_STDOUT} 2> ${QPKG_STDERR} ) &
 #    echo $! > ${QPKG_PIDFILE}
 
 #    # Renice new pid - TODO: Needs more testing
@@ -204,6 +309,7 @@ case "$1" in
 #    log_tool -t 1 -a "Reniced karaf process "${QPKG_PID}" to "$(awk '{print $19}' /proc/${QPKG_PID}/stat)
 
     # TODO: WORKAROUND: Waiting one and a half minute until the service is properly turned on
+    echo "Waiting 90 secs until the openHAB service is properly turned on"
     sleep 90
     ;;
 
@@ -212,53 +318,60 @@ case "$1" in
 #    if [ -f ${QPKG_PIDFILE} ]; then
 #        kill -9 $(cat ${QPKG_PIDFILE}) > ${QPKG_STDOUT}_kill 2> ${QPKG_STDERR}_kill
 #        rm ${QPKG_PIDFILE}
-    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_STOP} > ${QPKG_STDOUT}_stop 2> ${QPKG_STDERR}_stop )
+	echo "Stop exec:" $QPKG_STOP
+    # ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_STOP} > ${QPKG_STDOUT}_stop 2> ${QPKG_STDERR}_stop )
+    ( cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_STOP} )
 #    else
 #        log_tool -t 1 -a  "$QPKG_NAME already stopped."
 #    fi
 
     # TODO: WORKAROUND: Waiting one minute until the service is properly turned off
+    echo Waiting 60 secs until the openHAB service is properly shutted down
     sleep 60
     ;;
 
-  restart)
-    if ${QPKG_STOP} ; then
-        if ${QPKG_START}
-            then
-                exit 0
-            else
-                exit 1
-            fi
-        else
-            exit 1
-        fi
+
+  ports)
+    # added by pocs on 13jun18 for test
+    setupEnvironment
+    lsof -Pi :${OPENHAB_HTTP_PORT} -sTCP:LISTEN -t 
+    lsof -Pi :${OPENHAB_HTTPS_PORT} -sTCP:LISTEN -t
     ;;
 
+
   status)
+    echo "executing:"$QPKG_STATUS
     setupEnvironment
-    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} exit
-${QPKG_STATUS} status
+    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} 
+    ${QPKG_STATUS}
     ;;
 
   console)
+    echo "please for checking environment usage step 1 QPKG_CONSOLE =" ${QPKG_CONSOLE}
+    # QPKG_CONSOLE = /share/MD0_DATA/.qpkg/openHAB/distribution/start.sh
     setupEnvironment
+    echo "please wait for not in use ports QPKG_HTTP_PORT=" ${QPKG_HTTP_PORT} QPKG_HTTPS_PORT "=" ${QPKG_HTTPS_PORT}
+    # QPKG_HTTP_PORT = 8090
     checkPorts
-
-    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT} OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE}
+    echo console function being activated
+    cd ${QPKG_DISTRIBUTION} && JAVA_HOME=${JAVA_HOME} PATH=$PATH:${JAVA_HOME}/bin OPENHAB_HTTP_PORT=${QPKG_HTTP_PORT}    OPENHAB_HTTPS_PORT=${QPKG_HTTPS_PORT} ${QPKG_CONSOLE} > ${QPKG_STDOUT} 2> ${QPKG_STDERR} &
+    echo "console function started, check pid......"
     ;;
 
   backup)
+	# 05jul20 15u00 : disabled Java backup as its not applicaple to Qnap, changed date format to allow proper SMB/sharing 
     mkdir -p ${QPKG_ROOT}/backups
     cd ${QPKG_DISTRIBUTION}
+
     tar --exclude=./.Trash-1000 \
         -vpczf \
-        ${QPKG_ROOT}/backups/openHAB_backup-$(date --iso-8601=seconds).tar.gz \
+        ${QPKG_ROOT}/backups/openHAB_backup-$(date +%Y%m%d-%H%M%S).tar.gz \
         .
-    cd ${QPKG_JAVA}
-    tar --exclude=./.Trash-1000 \
-        -vpczf \
-        ${QPKG_ROOT}/backups/openHAB_backup-java-$(date --iso-8601=seconds).tar.gz \
-        .
+    # cd ${QPKG_JAVA}
+    # tar --exclude=./.Trash-1000 \
+    #    -vpczf \
+    #    ${QPKG_ROOT}/backups/openHAB_backup-java-$(date --iso-8601=seconds).tar.gz \
+    #    .
     ;;
 
   snapshot-download)
@@ -272,11 +385,37 @@ ${QPKG_STATUS} status
 
     ## Migration from the old folder layout to the new:
     ## -> https://github.com/openhab/openhab-distro/pull/318
+
+	# the following is happenin here:
+	# If exist, set aside Karaf settings into distribution/etc:
+	# copy	/share/MD0_DATA/.qpkg/openHAB/distribution/runtime/karaf/etc  to /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/etc
+	# del	/share/MD0_DATA/.qpkg/openHAB/distribution/runtime/karaf/etc
+	#
+	# Remove old "Karaf/Deploy" rubbish:
+	# del	/share/MD0_DATA/.qpkg/openHAB/distribution/userdata/deploy	# (not existing)
+	#       /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/kar 	# (empty)
+	#       /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/lock	# (not existing)
+	#
+	# Remove/empty: ../userdata/tmp and refill from snapshot
+	# remove /share/MD0_DATA/.qpkg/openHAB/distribution/runtime			# (will be refilled)
+	#        /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/cache 	# (filled with wring & bundles)
+	#        /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/tmp  	# (work)
+	# copy   /share/MD0_DATA/.qpkg/openHAB/tmp/userdata/tmp /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/tmp 	# (readme)
+	#
+	# Save existing Karaf settings in ../userdata/etc
+	# remove /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/etc-old	# (not existing)
+	# move 	 /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/etc /share/MD0_DATA/.qpkg/openHAB/distribution/userdata/etc-old # save
+	# place	 /share/MD0_DATA/.qpkg/openHAB/tmp/userdata/etc	/share/MD0_DATA/.qpkg/openHAB/distribution/userdata/etc
+	#
+	# place/refill ../runtime:
+	# move	/share/MD0_DATA/.qpkg/openHAB/tmp/runtime /share/MD0_DATA/.qpkg/openHAB/distribution/
+
     # Keeping karaf settings
     if [ -d ${QPKG_DISTRIBUTION}/runtime/karaf/etc ]; then
         cp -rf ${QPKG_DISTRIBUTION}/runtime/karaf/etc/* ${QPKG_TMP}/userdata/etc
         rm -rf ${QPKG_DISTRIBUTION}/runtime/karaf/etc
     fi
+
     # Removing superfluous/orphaned files
     rm -rf ${QPKG_DISTRIBUTION}/userdata/deploy
     rm -rf ${QPKG_DISTRIBUTION}/userdata/kar
@@ -312,7 +451,7 @@ ${QPKG_STATUS} status
     downloadJavaX64
     ;;
   *)
-    echo "Usage: $0 {start|stop|restart|status|console|backup|snapshot-update|snapshot-download|downloadJava}"
+    echo "Usage: $0 {start|stop|restart|status|console|backup|check|snapshot-update|snapshot-download|downloadJava}"
     exit 1
 esac
 
