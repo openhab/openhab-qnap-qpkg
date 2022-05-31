@@ -18,17 +18,17 @@ openHAB Packages for QNAP NAS systems
 
 4. Open the "Install manually" dialog in the App Center by clicking the gear-wheel on the upper-right corner of the App Center and choose the `qpkg` you have downloaded.
 
-    ![AppCenter choose](https://github.com/openhab/openhab-qnap-qpkg/raw/master/docs/QTS_4.2.0_AppCenter%20choose.png)
+    ![AppCenter choose](https://github.com/openhab/openhab-qnap-qpkg/raw/main/docs/QTS_4.2.0_AppCenter%20choose.png)
 
 5. Confirm the installation
 
-    ![AppCenter confirm](https://github.com/openhab/openhab-qnap-qpkg/raw/master/docs/QTS_4.2.0_AppCenter%20confirm.png)
+    ![AppCenter confirm](https://github.com/openhab/openhab-qnap-qpkg/raw/main/docs/QTS_4.2.0_AppCenter%20confirm.png)
 
 6. Wait while the package is being installed
 
 7. When finished just close the dialog and wait for a while until openHAB has completely started.  This may take several minutes.
 
-    ![AppCenter finished](https://github.com/openhab/openhab-qnap-qpkg/raw/master/docs/QTS_4.2.0_AppCenter%20finished.png)
+    ![AppCenter finished](https://github.com/openhab/openhab-qnap-qpkg/raw/main/docs/QTS_4.2.0_AppCenter%20finished.png)
 
 8. Access openHAB via "[http://NAS_IP_or_DNS_address:8090](#)". If the interface does not start, retry after another minute. The initial startup takes some time.
 
